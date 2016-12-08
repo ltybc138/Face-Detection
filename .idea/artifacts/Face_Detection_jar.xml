@@ -1,0 +1,22 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Face Detection:jar">
+    <output-path>$PROJECT_DIR$/out/Face_Detection_jar</output-path>
+    <root id="archive" name="Face Detection.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="Face Detection" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/libs/opencv-2413.jar" path-in-jar="/" />
+      <element id="library" level="project" name="opencv-2413" />
+      <element id="library" level="project" name="javacpp" />
+      <element id="library" level="project" name="javacv" />
+      <element id="library" level="project" name="javacv-linux-x86" />
+      <element id="library" level="project" name="javacv-linux-x86_64" />
+      <element id="library" level="project" name="javacv-macosx-x86_64" />
+      <element id="library" level="project" name="javacv-windows-x86" />
+      <element id="library" level="project" name="javacv-windows-x86_64" />
+      <element id="library" level="project" name="opencv-310" />
+      <element id="library" level="project" name="opencv-2413 (2)" />
+    </root>
+  </artifact>
+</component>
