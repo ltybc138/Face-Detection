@@ -1,4 +1,4 @@
-package com.denis.detection;
+package com.denis.detection.image;
 
 import static org.opencv.imgproc.Imgproc.*;
 

@@ -1,4 +1,4 @@
-package com.denis.detection;
+package com.denis.detection.image;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;

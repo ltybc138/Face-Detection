@@ -30,6 +30,7 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         // load the native OpenCV library
+        // TODO try to set VM options in program
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         launch(args);
     }

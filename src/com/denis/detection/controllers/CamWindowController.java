@@ -1,7 +1,9 @@
-package com.denis.detection;
+package com.denis.detection.controllers;
 
 import com.denis.detection.cascadeDetecting.CascadePaths;
 import com.denis.detection.cascadeDetecting.FaceDetector;
+import com.denis.detection.image.Filters;
+import com.denis.detection.image.Utils;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -184,16 +186,16 @@ public class CamWindowController {
         FaceDetector detector = new FaceDetector();
         if (detectFaceCheckBox.isSelected()) {
             if (!defaultCascade.isSelected()) {
-                detector.loadCascade(CascadePaths.defaultCascadePath);
+                detector.loadCascade(CascadePaths.faceDefaultCascadePath);
                 detector.detectAndDrawFace(image);
             } else if (!altCascade.isSelected()) {
-                detector.loadCascade(CascadePaths.altCascadePath);
+                detector.loadCascade(CascadePaths.faceAltCascadePath);
                 detector.detectAndDrawFace(image);
             } else if (!alt2Cascade.isSelected()) {
-                detector.loadCascade(CascadePaths.alt2CascadePath);
+                detector.loadCascade(CascadePaths.faceAlt2CascadePath);
                 detector.detectAndDrawFace(image);
             } else if (!altTreeCascade.isSelected()) {
-                detector.loadCascade(CascadePaths.altTreeCascadePath);
+                detector.loadCascade(CascadePaths.faceAltTreeCascadePath);
                 detector.detectAndDrawFace(image);
             }
         }
@@ -289,6 +291,7 @@ public class CamWindowController {
         return new Image(new ByteArrayInputStream(buffer.toArray()));
     }
 
+    // TODO delete this damn logging system
     protected void logError(String logMessage) {
         System.err.println(logMessage);
         loggingArea.setText(loggingArea.getText() + "Error: " + logMessage + "\n");
