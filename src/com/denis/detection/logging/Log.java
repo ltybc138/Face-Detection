@@ -15,7 +15,7 @@ public class Log {
                 String.valueOf(Calendar.getInstance().getTime().getHours()) + "-" +
                 String.valueOf(Calendar.getInstance().getTime().getMinutes());
         try {
-            saver = new PrintWriter(new FileWriter("src/logs/" + fileName + ".log"));
+            saver = new PrintWriter(new FileWriter("src/" + fileName + ".log"));
         } catch (IOException e) {
             e.printStackTrace();
         }
