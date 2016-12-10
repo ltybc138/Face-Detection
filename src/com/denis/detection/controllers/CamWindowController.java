@@ -1,9 +1,11 @@
 package com.denis.detection.controllers;
 
+import com.denis.detection.Main;
 import com.denis.detection.cascadeDetecting.CascadePaths;
 import com.denis.detection.cascadeDetecting.FaceDetector;
 import com.denis.detection.image.Filters;
 import com.denis.detection.image.Utils;
+import com.denis.detection.logging.Log;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -102,6 +104,8 @@ public class CamWindowController {
 
     boolean firstInto = false;
 
+    private Log logger = Main.logger;
+
     @FXML
     protected void startCam(ActionEvent event) {
         firstInto = true;
@@ -110,6 +114,7 @@ public class CamWindowController {
         detectFaceCheckBox.setSelected(false);
         if (!this.cameraActive) {
             log("Start button have been touched");
+            logger.simpleLog("Start button have been touched");
 
             // start the video capture
             this.capture.open(cameraId);
@@ -119,6 +124,7 @@ public class CamWindowController {
                 this.cameraActive = true;
 
                 log("Starting cam thread...");
+                logger.simpleLog("Starting cam thread...");
                 // grab a frame every 33 ms (30 frames/sec)
                 Runnable frameGrabber = new Runnable() {
                     @Override
@@ -142,6 +148,7 @@ public class CamWindowController {
                 this.startCam.setText("Stop Camera");
             } else {
                 logError("Impossible to open the camera connection...");
+                logger.simpleLog("Impossible to open the camera connection...");
             }
         } else {
             // the camera is not active at this point
@@ -150,8 +157,10 @@ public class CamWindowController {
             this.startCam.setText("Start Camera");
             // stop the timer
             log("Start stopping cam thread...");
+            logger.simpleLog("Start stopping cam thread...");
             this.stopAcquisition();
             log("Cam thread stopped");
+            logger.simpleLog("Cam thread stopped");
         }
     }
 
@@ -177,6 +186,7 @@ public class CamWindowController {
 
             } catch (Exception e) {
                 logError("Exception during the image elaboration: " + e);
+                logger.errorLog("Exception during the image elaboration: " + e);
             }
         }
         return frame;
@@ -230,6 +240,7 @@ public class CamWindowController {
                 this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 logError("Exception in stopping the frame capture, trying to release the camera now... " + e);
+                logger.errorLog("Exception in stopping the frame capture, trying to release the camera now... " + e);
             }
         }
 
@@ -247,7 +258,7 @@ public class CamWindowController {
         Imgproc.cvtColor(src, dst, filter);
     }
 
-    private void ennableAllFiltersItems() {
+    private void enableAllFiltersItems() {
         bgr2hlsItem.setDisable(false);
         bgr2hsvItem.setDisable(false);
         bgr2grayItem.setDisable(false);
@@ -264,12 +275,6 @@ public class CamWindowController {
         bgr2yuvi420Item.setDisable(false);
         bgr2yuviyuvItem.setDisable(false);
         bgr2yuvyv12Item.setDisable(false);
-    }
-
-    private Mat getFaceDetectedRect(Mat image) {
-        Mat faceMat = new Mat();
-
-        return null;
     }
 
     private void saveImage(Image image, String src) {
@@ -304,6 +309,7 @@ public class CamWindowController {
 
     protected void buttonTouchLog(String buttonName) {
         log(buttonName + " button have been touched");
+        logger.simpleLog(buttonName + " button have been touched");
     }
 
     protected void setClosed() {
@@ -313,9 +319,13 @@ public class CamWindowController {
     @FXML
     protected void detectFaceAction(ActionEvent event) {
         detectFaceCheckBox.setOnAction(e -> {
-            if (detectFaceCheckBox.isSelected())
+            if (detectFaceCheckBox.isSelected()) {
                 setAllRadioCascadesEnable();
-            else setAllRadioCascadesDisable();
+                logger.simpleLog("Detect face checkbox have been touched. Face detection started");
+            } else {
+                setAllRadioCascadesDisable();
+                logger.simpleLog("Detect face checkbox have been touched. Face detection stopped");
+            }
         });
     }
 
@@ -323,6 +333,7 @@ public class CamWindowController {
     protected void defaultCascadeAction(ActionEvent event) {
         defaultCascade.setOnAction(e -> {
             setAllRadioCascadesOff();
+            logger.simpleLog("Default radio button have been touched");
             defaultCascade.setSelected(true);
         });
     }
@@ -331,6 +342,7 @@ public class CamWindowController {
     protected void altCascadeAction(ActionEvent event) {
         altCascade.setOnAction(e -> {
             setAllRadioCascadesOff();
+            logger.simpleLog("Alt radio button have been touched");
             altCascade.setSelected(true);
         });
     }
@@ -339,6 +351,7 @@ public class CamWindowController {
     protected void alt2CascadeAction(ActionEvent event) {
         alt2Cascade.setOnAction(e -> {
             setAllRadioCascadesOff();
+            logger.simpleLog("Alt2 radio button have been touched");
             alt2Cascade.setSelected(true);
         });
     }
@@ -347,6 +360,7 @@ public class CamWindowController {
     protected void altTreeCascadeAction(ActionEvent event) {
         altTreeCascade.setOnAction(e -> {
             setAllRadioCascadesOff();
+            logger.simpleLog("AltTree radio button have been touched");
             altTreeCascade.setSelected(true);
         });
     }
@@ -354,7 +368,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2hlsAction(ActionEvent event) {
         bgr2hlsItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2hlsItem.setDisable(true);
             filter = Filters.FILTER_BGR2HLS;
             buttonTouchLog("FILTER_BGR2HLS");
@@ -364,7 +378,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2hsvAction(ActionEvent event) {
         bgr2hsvItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2hsvItem.setDisable(true);
             filter = Filters.FILTER_BGR2HSV;
             buttonTouchLog("FILTER_BGR2HSV");
@@ -374,7 +388,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2greyAction(ActionEvent event) {
         bgr2grayItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2grayItem.setDisable(true);
             filter = Filters.FILTER_BGR2GRAY;
             buttonTouchLog("FILTER_BGR2GRAY");
@@ -384,7 +398,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2bgr555Action(ActionEvent event) {
         bgr2bgr555Item.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2bgr555Item.setDisable(true);
             filter = Filters.FILTER_BGR2BGR555;
             buttonTouchLog("FILTER_BGR2BGR555");
@@ -394,7 +408,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2xyzAction(ActionEvent event) {
         bgr2xyzItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2xyzItem.setDisable(true);
             filter = Filters.FILTER_BGR2XYZ;
             buttonTouchLog("FILTER_BGR2XYZ");
@@ -404,7 +418,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2bgr565Action(ActionEvent event) {
         bgr2bgr565Item.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2bgr565Item.setDisable(true);
             filter = Filters.FILTER_BGR2BGR565;
             buttonTouchLog("FILTER_BGR2BGR565");
@@ -414,7 +428,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2hlsfullAction(ActionEvent event) {
         bgr2hlsfullItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2hlsfullItem.setDisable(true);
             filter = Filters.FILTER_BGR2HLS_FULL;
             buttonTouchLog("FILTER_BGR2HLS_FULL");
@@ -424,7 +438,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2hsvfullAction(ActionEvent event) {
         bgr2hsvfullItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2hsvfullItem.setDisable(true);
             filter = Filters.FILTER_BGR2HSV_FULL;
             buttonTouchLog("FILTER_BGR2HSV_FULL");
@@ -434,7 +448,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2labAction(ActionEvent event) {
         bgr2labItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2labItem.setDisable(true);
             filter = Filters.FILTER_BGR2Lab;
             buttonTouchLog("FILTER_BGR2Lab");
@@ -444,7 +458,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2luvAction(ActionEvent event) {
         bgr2luvItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2luvItem.setDisable(true);
             filter = Filters.FILTER_BGR2Luv;
             buttonTouchLog("FILTER_BGR2Luv");
@@ -454,7 +468,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2rgbAction(ActionEvent event) {
         bgr2rgbItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2rgbItem.setDisable(true);
             filter = Filters.FILTER_BGR2RGB;
             buttonTouchLog("FILTER_BGR2RGB");
@@ -464,7 +478,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2ycrcbAction(ActionEvent event) {
         bgr2ycrcbItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2ycrcbItem.setDisable(true);
             filter = Filters.FILTER_BGR2YCrCb;
             buttonTouchLog("FILTER_BGR2YCrCb");
@@ -474,7 +488,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2yuvAction(ActionEvent event) {
         bgr2yuvItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2yuvItem.setDisable(true);
             filter = Filters.FILTER_BGR2YUV;
             buttonTouchLog("FILTER_BGR2YUV");
@@ -484,7 +498,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2yuvi420Action(ActionEvent event) {
         bgr2yuvi420Item.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2yuvi420Item.setDisable(true);
             filter = Filters.FILTER_BGR2YUV_I420;
             buttonTouchLog("FILTER_BGR2YUV_I420");
@@ -494,7 +508,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2yuviyuvAction(ActionEvent event) {
         bgr2yuviyuvItem.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2yuviyuvItem.setDisable(true);
             filter = Filters.FILTER_BGR2YUV_IYUV;
             buttonTouchLog("FILTER_BGR2YUV_IYUV");
@@ -504,7 +518,7 @@ public class CamWindowController {
     @FXML
     protected void bgr2yuvyv12Action(ActionEvent event) {
         bgr2yuvyv12Item.setOnAction(e -> {
-            ennableAllFiltersItems();
+            enableAllFiltersItems();
             bgr2yuvyv12Item.setDisable(true);
             filter = Filters.FILTER_BGR2YUV_YV12;
             buttonTouchLog("FILTER_BGR2YUV_YV12");
