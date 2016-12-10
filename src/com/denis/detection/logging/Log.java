@@ -8,6 +8,7 @@ import java.util.Calendar;
 public class Log {
     private PrintWriter saver = null;
     public Log() {
+        // TODO fix problem with year
         String fileName = String.valueOf(Calendar.getInstance().getTime().getYear()) + "-" +
                 String.valueOf(Calendar.getInstance().getTime().getMonth()) + "-" +
                 String.valueOf(Calendar.getInstance().getTime().getDate()) + "-" +
