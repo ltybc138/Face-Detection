@@ -1,6 +1,6 @@
 package com.denis.detection;
 
-import com.denis.detection.logging.Log;
+import com.denis.detection.property.PropertiesReader;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -9,14 +9,13 @@ import javafx.stage.Stage;
 import org.opencv.core.Core;
 
 import java.io.IOException;
+import java.util.Properties;
 
 public class Main extends Application {
 
-    public static Stage stage;
+    private static Stage stage;
     private Scene scene;
-    public BorderPane pane;
-
-    public static Log logger;
+    private BorderPane pane;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -28,15 +27,18 @@ public class Main extends Application {
         }
         scene = new Scene(pane);
         stage.setScene(scene);
+        stage.setTitle("Face detection");
         stage.show();
     }
 
     public static void main(String[] args) {
         // load the native OpenCV library
-        // TODO try to set VM options in program
-        logger = new Log();
+        Properties properties = new PropertiesReader().getProperties();
+        //System.setProperty("java.library.path", properties.getProperty("java.library.path"));
+        //System.setProperty("java.library.path", "C:\\OpenCV\\opencv\\build\\java\\x64");
+        // TODO end config.property file init, add more properties
+        System.out.println(properties.getProperty("java.library.path"));
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         launch(args);
-        logger.closeLogger();
     }
 }

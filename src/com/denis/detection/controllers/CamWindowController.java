@@ -1,26 +1,15 @@
 package com.denis.detection.controllers;
 
-import com.denis.detection.Main;
-import com.denis.detection.cascadeDetecting.CascadePaths;
 import com.denis.detection.cascadeDetecting.FaceDetector;
-import com.denis.detection.image.Filters;
+import com.denis.detection.image.ImageTransformations;
 import com.denis.detection.image.Utils;
-import com.denis.detection.logging.Log;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.opencv.core.*;
 import org.opencv.highgui.VideoCapture;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 
-import javax.imageio.ImageIO;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,40 +21,6 @@ public class CamWindowController {
     private Button startCam;
     @FXML
     private ImageView camView;
-
-    // filter javafx items
-    @FXML
-    private MenuItem bgr2hlsItem;
-    @FXML
-    private MenuItem bgr2hsvItem;
-    @FXML
-    private MenuItem bgr2grayItem;
-    @FXML
-    private MenuItem bgr2bgr555Item;
-    @FXML
-    private MenuItem bgr2xyzItem;
-    @FXML
-    private MenuItem bgr2bgr565Item;
-    @FXML
-    private MenuItem bgr2hlsfullItem;
-    @FXML
-    private MenuItem bgr2hsvfullItem;
-    @FXML
-    private MenuItem bgr2labItem;
-    @FXML
-    private MenuItem bgr2luvItem;
-    @FXML
-    private MenuItem bgr2rgbItem;
-    @FXML
-    private MenuItem bgr2ycrcbItem;
-    @FXML
-    private MenuItem bgr2yuvItem;
-    @FXML
-    private MenuItem bgr2yuvi420Item;
-    @FXML
-    private MenuItem bgr2yuviyuvItem;
-    @FXML
-    private MenuItem bgr2yuvyv12Item;
 
     // cascades radio buttons
     @FXML
@@ -79,44 +34,36 @@ public class CamWindowController {
     @FXML
     private CheckBox detectFaceCheckBox;
 
-    // logo javafx items
-    @FXML
-    private CheckBox addLogo;
-    private Mat logo;
-
-    @FXML
-    private TextArea loggingArea;
-
     // a timer for acquiring the video stream
     private ScheduledExecutorService timer;
-
     // the OpenCV object that realizes the video capture
     private VideoCapture capture = new VideoCapture();
-
     // a flag to change the button behavior
-    private boolean cameraActive = false;
-
-    // the id of the camera to be used
-    private static int cameraId = 0;
-
+    private boolean cameraActive;
     // now uses filter
-    private static int filter = Filters.FILTER_BGR2RGB;
+    protected boolean firstInto;
 
-    boolean firstInto = false;
+    // face rect
+    private Mat faceRect = null;
+    private int faceCounter = 0;
 
-    private Log logger = Main.logger;
+    public CamWindowController() {
+        cameraActive = false;
+        firstInto = false;
+    }
 
     @FXML
-    protected void startCam(ActionEvent event) {
+    protected void startCam() {
         firstInto = true;
         defaultCascade.setSelected(true);
         setAllRadioCascadesDisable();
         detectFaceCheckBox.setSelected(false);
+        faceCounter++;
         if (!this.cameraActive) {
             log("Start button have been touched");
-            logger.simpleLog("Start button have been touched");
 
             // start the video capture
+            int cameraId = 0;
             this.capture.open(cameraId);
 
             // is the video stream available?
@@ -124,31 +71,22 @@ public class CamWindowController {
                 this.cameraActive = true;
 
                 log("Starting cam thread...");
-                logger.simpleLog("Starting cam thread...");
+
                 // grab a frame every 33 ms (30 frames/sec)
-                Runnable frameGrabber = new Runnable() {
-                    @Override
-                    public void run() {
-                        // effectively grab and process a single frame
-                        Mat frame = grabFrame();
+                Runnable frameGrabber = () -> {
+                    // effectively grab and process a single frame
+                    Mat frame = grabFrame();
 
-                        // convert and show the frame
-                        Image imageToShow = Utils.mat2Image(frame);
-                        updateImageView(camView, imageToShow);
-
-                        //update(frame);
-                    }
+                    // convert and show the frame
+                    Image imageToShow = Utils.mat2Image(frame);
+                    updateImageView(camView, imageToShow);
                 };
-
                 // init timer
                 this.timer = Executors.newSingleThreadScheduledExecutor();
                 this.timer.scheduleAtFixedRate(frameGrabber, 0, 15, TimeUnit.MILLISECONDS);
 
                 // update the button content
                 this.startCam.setText("Stop Camera");
-            } else {
-                logError("Impossible to open the camera connection...");
-                logger.simpleLog("Impossible to open the camera connection...");
             }
         } else {
             // the camera is not active at this point
@@ -157,10 +95,8 @@ public class CamWindowController {
             this.startCam.setText("Start Camera");
             // stop the timer
             log("Start stopping cam thread...");
-            logger.simpleLog("Start stopping cam thread...");
             this.stopAcquisition();
             log("Cam thread stopped");
-            logger.simpleLog("Cam thread stopped");
         }
     }
 
@@ -176,38 +112,35 @@ public class CamWindowController {
 
                 // if the frame is not empty, process it
                 if (!frame.empty()) {
-                    //Imgproc.blur(frame, frame, new Size(15, 7));
-                    //Imgproc.GaussianBlur(frame, frame, new Size(9, 9), 3);
-                    Imgproc.pyrDown(frame, frame);
-                    Imgproc.pyrDown(frame, frame);
-                    loadFaceRect(frame);
-                    setFilter(frame, frame);
+                    Mat copyOfFrame = new Mat();
+                    frame.copyTo(copyOfFrame);
+                    ImageTransformations.getTransformedMat(copyOfFrame, copyOfFrame);
+                    loadFaceRect(copyOfFrame, frame, 4);
                 }
-
             } catch (Exception e) {
-                logError("Exception during the image elaboration: " + e);
-                logger.errorLog("Exception during the image elaboration: " + e);
+                log("Exception: " + e);
             }
         }
         return frame;
     }
 
-    private void loadFaceRect(Mat image) {
-        FaceDetector detector = new FaceDetector();
+    private void loadFaceRect(Mat src, Mat dst, int pyrCount) {
+        FaceDetector detector = new FaceDetector(faceCounter);
         if (detectFaceCheckBox.isSelected()) {
             if (!defaultCascade.isSelected()) {
-                detector.loadCascade(CascadePaths.faceDefaultCascadePath);
-                detector.detectAndDrawFace(image);
+                detector.loadCascade(FaceDetector.faceDefaultCascadePath);
+                detector.detectAndDrawFace(src, dst, pyrCount);
             } else if (!altCascade.isSelected()) {
-                detector.loadCascade(CascadePaths.faceAltCascadePath);
-                detector.detectAndDrawFace(image);
+                detector.loadCascade(FaceDetector.faceAltCascadePath);
+                detector.detectAndDrawFace(src, dst, pyrCount);
             } else if (!alt2Cascade.isSelected()) {
-                detector.loadCascade(CascadePaths.faceAlt2CascadePath);
-                detector.detectAndDrawFace(image);
+                detector.loadCascade(FaceDetector.faceAlt2CascadePath);
+                detector.detectAndDrawFace(src, dst, pyrCount);
             } else if (!altTreeCascade.isSelected()) {
-                detector.loadCascade(CascadePaths.faceAltTreeCascadePath);
-                detector.detectAndDrawFace(image);
+                detector.loadCascade(FaceDetector.faceAltTreeCascadePath);
+                detector.detectAndDrawFace(src, dst, pyrCount);
             }
+            //this.faceRect = detector.getFaceRect();
         }
     }
 
@@ -239,8 +172,7 @@ public class CamWindowController {
                 this.timer.shutdown();
                 this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
-                logError("Exception in stopping the frame capture, trying to release the camera now... " + e);
-                logger.errorLog("Exception in stopping the frame capture, trying to release the camera now... " + e);
+                log("Exception: " + e);
             }
         }
 
@@ -254,274 +186,50 @@ public class CamWindowController {
         Utils.onFXThread(view.imageProperty(), image);
     }
 
-    private void setFilter(Mat src, Mat dst) {
-        Imgproc.cvtColor(src, dst, filter);
-    }
-
-    private void enableAllFiltersItems() {
-        bgr2hlsItem.setDisable(false);
-        bgr2hsvItem.setDisable(false);
-        bgr2grayItem.setDisable(false);
-        bgr2bgr555Item.setDisable(false);
-        bgr2xyzItem.setDisable(false);
-        bgr2bgr565Item.setDisable(false);
-        bgr2hlsfullItem.setDisable(false);
-        bgr2hsvfullItem.setDisable(false);
-        bgr2labItem.setDisable(false);
-        bgr2luvItem.setDisable(false);
-        bgr2rgbItem.setDisable(false);
-        bgr2ycrcbItem.setDisable(false);
-        bgr2yuvItem.setDisable(false);
-        bgr2yuvi420Item.setDisable(false);
-        bgr2yuviyuvItem.setDisable(false);
-        bgr2yuvyv12Item.setDisable(false);
-    }
-
-    private void saveImage(Image image, String src) {
-        try {
-            String format = ".png";
-            File file = new File(src);
-            ImageIO.write(SwingFXUtils.fromFXImage(image, null), format, file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Image mat2Image(Mat frame) {
-        // create a temporary buffer
-        MatOfByte buffer = new MatOfByte();
-        // encode the frame in the buffer, according to the PNG format
-        Imgcodecs.imencode(".png", frame, buffer);
-        // build and return an Image created from the image encoded in the buffer
-        return new Image(new ByteArrayInputStream(buffer.toArray()));
-    }
-
-    // TODO delete this damn logging system
-    protected void logError(String logMessage) {
-        System.err.println(logMessage);
-        loggingArea.setText(loggingArea.getText() + "Error: " + logMessage + "\n");
-    }
-
     protected void log(String logMessage) {
         System.out.println(logMessage);
-        loggingArea.setText(loggingArea.getText() + logMessage + "\n");
-    }
-
-    protected void buttonTouchLog(String buttonName) {
-        log(buttonName + " button have been touched");
-        logger.simpleLog(buttonName + " button have been touched");
-    }
-
-    protected void setClosed() {
-        this.stopAcquisition();
     }
 
     @FXML
-    protected void detectFaceAction(ActionEvent event) {
+    protected void detectFaceAction() {
         detectFaceCheckBox.setOnAction(e -> {
             if (detectFaceCheckBox.isSelected()) {
                 setAllRadioCascadesEnable();
-                logger.simpleLog("Detect face checkbox have been touched. Face detection started");
             } else {
                 setAllRadioCascadesDisable();
-                logger.simpleLog("Detect face checkbox have been touched. Face detection stopped");
             }
         });
     }
 
     @FXML
-    protected void defaultCascadeAction(ActionEvent event) {
+    protected void defaultCascadeAction() {
         defaultCascade.setOnAction(e -> {
             setAllRadioCascadesOff();
-            logger.simpleLog("Default radio button have been touched");
             defaultCascade.setSelected(true);
         });
     }
 
     @FXML
-    protected void altCascadeAction(ActionEvent event) {
+    protected void altCascadeAction() {
         altCascade.setOnAction(e -> {
             setAllRadioCascadesOff();
-            logger.simpleLog("Alt radio button have been touched");
             altCascade.setSelected(true);
         });
     }
 
     @FXML
-    protected void alt2CascadeAction(ActionEvent event) {
+    protected void alt2CascadeAction() {
         alt2Cascade.setOnAction(e -> {
             setAllRadioCascadesOff();
-            logger.simpleLog("Alt2 radio button have been touched");
             alt2Cascade.setSelected(true);
         });
     }
 
     @FXML
-    protected void altTreeCascadeAction(ActionEvent event) {
+    protected void altTreeCascadeAction() {
         altTreeCascade.setOnAction(e -> {
             setAllRadioCascadesOff();
-            logger.simpleLog("AltTree radio button have been touched");
             altTreeCascade.setSelected(true);
-        });
-    }
-
-    @FXML
-    protected void bgr2hlsAction(ActionEvent event) {
-        bgr2hlsItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2hlsItem.setDisable(true);
-            filter = Filters.FILTER_BGR2HLS;
-            buttonTouchLog("FILTER_BGR2HLS");
-        });
-    }
-
-    @FXML
-    protected void bgr2hsvAction(ActionEvent event) {
-        bgr2hsvItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2hsvItem.setDisable(true);
-            filter = Filters.FILTER_BGR2HSV;
-            buttonTouchLog("FILTER_BGR2HSV");
-        });
-    }
-
-    @FXML
-    protected void bgr2greyAction(ActionEvent event) {
-        bgr2grayItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2grayItem.setDisable(true);
-            filter = Filters.FILTER_BGR2GRAY;
-            buttonTouchLog("FILTER_BGR2GRAY");
-        });
-    }
-
-    @FXML
-    protected void bgr2bgr555Action(ActionEvent event) {
-        bgr2bgr555Item.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2bgr555Item.setDisable(true);
-            filter = Filters.FILTER_BGR2BGR555;
-            buttonTouchLog("FILTER_BGR2BGR555");
-        });
-    }
-
-    @FXML
-    protected void bgr2xyzAction(ActionEvent event) {
-        bgr2xyzItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2xyzItem.setDisable(true);
-            filter = Filters.FILTER_BGR2XYZ;
-            buttonTouchLog("FILTER_BGR2XYZ");
-        });
-    }
-
-    @FXML
-    protected void bgr2bgr565Action(ActionEvent event) {
-        bgr2bgr565Item.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2bgr565Item.setDisable(true);
-            filter = Filters.FILTER_BGR2BGR565;
-            buttonTouchLog("FILTER_BGR2BGR565");
-        });
-    }
-
-    @FXML
-    protected void bgr2hlsfullAction(ActionEvent event) {
-        bgr2hlsfullItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2hlsfullItem.setDisable(true);
-            filter = Filters.FILTER_BGR2HLS_FULL;
-            buttonTouchLog("FILTER_BGR2HLS_FULL");
-        });
-    }
-
-    @FXML
-    protected void bgr2hsvfullAction(ActionEvent event) {
-        bgr2hsvfullItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2hsvfullItem.setDisable(true);
-            filter = Filters.FILTER_BGR2HSV_FULL;
-            buttonTouchLog("FILTER_BGR2HSV_FULL");
-        });
-    }
-
-    @FXML
-    protected void bgr2labAction(ActionEvent event) {
-        bgr2labItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2labItem.setDisable(true);
-            filter = Filters.FILTER_BGR2Lab;
-            buttonTouchLog("FILTER_BGR2Lab");
-        });
-    }
-
-    @FXML
-    protected void bgr2luvAction(ActionEvent event) {
-        bgr2luvItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2luvItem.setDisable(true);
-            filter = Filters.FILTER_BGR2Luv;
-            buttonTouchLog("FILTER_BGR2Luv");
-        });
-    }
-
-    @FXML
-    protected void bgr2rgbAction(ActionEvent event) {
-        bgr2rgbItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2rgbItem.setDisable(true);
-            filter = Filters.FILTER_BGR2RGB;
-            buttonTouchLog("FILTER_BGR2RGB");
-        });
-    }
-
-    @FXML
-    protected void bgr2ycrcbAction(ActionEvent event) {
-        bgr2ycrcbItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2ycrcbItem.setDisable(true);
-            filter = Filters.FILTER_BGR2YCrCb;
-            buttonTouchLog("FILTER_BGR2YCrCb");
-        });
-    }
-
-    @FXML
-    protected void bgr2yuvAction(ActionEvent event) {
-        bgr2yuvItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2yuvItem.setDisable(true);
-            filter = Filters.FILTER_BGR2YUV;
-            buttonTouchLog("FILTER_BGR2YUV");
-        });
-    }
-
-    @FXML
-    protected void bgr2yuvi420Action(ActionEvent event) {
-        bgr2yuvi420Item.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2yuvi420Item.setDisable(true);
-            filter = Filters.FILTER_BGR2YUV_I420;
-            buttonTouchLog("FILTER_BGR2YUV_I420");
-        });
-    }
-
-    @FXML
-    protected void bgr2yuviyuvAction(ActionEvent event) {
-        bgr2yuviyuvItem.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2yuviyuvItem.setDisable(true);
-            filter = Filters.FILTER_BGR2YUV_IYUV;
-            buttonTouchLog("FILTER_BGR2YUV_IYUV");
-        });
-    }
-
-    @FXML
-    protected void bgr2yuvyv12Action(ActionEvent event) {
-        bgr2yuvyv12Item.setOnAction(e -> {
-            enableAllFiltersItems();
-            bgr2yuvyv12Item.setDisable(true);
-            filter = Filters.FILTER_BGR2YUV_YV12;
-            buttonTouchLog("FILTER_BGR2YUV_YV12");
         });
     }
 }

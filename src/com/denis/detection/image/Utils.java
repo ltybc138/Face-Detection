@@ -27,7 +27,7 @@ public final class Utils {
         });
     }
 
-    private static BufferedImage matToBufferedImage(Mat original) {
+    public static BufferedImage matToBufferedImage(Mat original) {
         // init
         BufferedImage image = null;
 

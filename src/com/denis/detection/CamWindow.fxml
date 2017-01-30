@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="716.0" prefWidth="1033.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.denis.detection.controllers.CamWindowController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="716.0" prefWidth="1033.0" xmlns="http://javafx.com/javafx/8.0.91" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.denis.detection.controllers.CamWindowController">
    <bottom>
       <Button fx:id="startCam" mnemonicParsing="false" onAction="#startCam" text="Start cam" BorderPane.alignment="CENTER">
          <BorderPane.margin>
@@ -14,66 +18,39 @@
       </Button>
    </bottom>
    <center>
-      <ImageView fx:id="camView" fitHeight="480.0" fitWidth="620.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
+      <ImageView fx:id="camView" fitHeight="407.0" fitWidth="651.0" pickOnBounds="true" preserveRatio="true" BorderPane.alignment="CENTER" />
    </center>
    <right>
-      <VBox prefHeight="571.0" prefWidth="360.0" BorderPane.alignment="CENTER">
-         <children>
-            <SplitMenuButton mnemonicParsing="false" text="Filters">
-              <items>
-                <MenuItem fx:id="bgr2hlsItem" mnemonicParsing="false" onAction="#bgr2hlsAction" text="BGS2HLS" />
-                <MenuItem fx:id="bgr2hsvItem" mnemonicParsing="false" onAction="#bgr2hsvAction" text="BGR2HSV" />
-                  <MenuItem fx:id="bgr2grayItem" mnemonicParsing="false" onAction="#bgr2greyAction" text="BGR2GRAY" />
-                  <MenuItem fx:id="bgr2hlsfullItem" mnemonicParsing="false" onAction="#bgr2hlsfullAction" text="BGR2HLS_FULL" />
-                  <MenuItem fx:id="bgr2hsvfullItem" mnemonicParsing="false" onAction="#bgr2hsvfullAction" text="BGR2HSV_FULL" />
-                  <MenuItem fx:id="bgr2xyzItem" mnemonicParsing="false" onAction="#bgr2xyzAction" text="BGR2XYZ" />
-                  <MenuItem fx:id="bgr2rgbItem" mnemonicParsing="false" onAction="#bgr2rgbAction" text="BGR2RGB" />
-                  <MenuItem fx:id="bgr2labItem" mnemonicParsing="false" onAction="#bgr2labAction" text="BGR2Lab" />
-                  <MenuItem fx:id="bgr2luvItem" mnemonicParsing="false" onAction="#bgr2luvAction" text="BGR2Luv" />
-                  <MenuItem fx:id="bgr2bgr555Item" mnemonicParsing="false" onAction="#bgr2bgr555Action" text="BGR2BGR555" />
-                  <MenuItem fx:id="bgr2bgr565Item" mnemonicParsing="false" onAction="#bgr2bgr565Action" text="BGR2BGR565" />
-                  <MenuItem fx:id="bgr2ycrcbItem" mnemonicParsing="false" onAction="#bgr2ycrcbAction" text="BGR2YCrCb" />
-                  <MenuItem fx:id="bgr2yuvItem" mnemonicParsing="false" onAction="#bgr2yuvAction" text="BGR2YUV" />
-                  <MenuItem fx:id="bgr2yuvi420Item" mnemonicParsing="false" onAction="#bgr2yuvi420Action" text="BGR2YUV_I420" />
-                  <MenuItem fx:id="bgr2yuviyuvItem" mnemonicParsing="false" onAction="#bgr2yuviyuvAction" text="BGR2YUV_IYUV" />
-                  <MenuItem fx:id="bgr2yuvyv12Item" mnemonicParsing="false" onAction="#bgr2yuvyv12Action" text="BGR2YUV_YV12" />
-              </items>
-            </SplitMenuButton>
-            <TextArea fx:id="loggingArea" editable="false" prefHeight="200.0" prefWidth="400.0" stylesheets="@loggingStyle.css">
-               <VBox.margin>
-                  <Insets left="5.0" right="5.0" top="10.0" />
-               </VBox.margin>
-            </TextArea>
-            <CheckBox fx:id="detectFaceCheckBox" mnemonicParsing="false" onAction="#detectFaceAction" text="Detect face">
-               <VBox.margin>
-                  <Insets bottom="5.0" top="5.0" />
-               </VBox.margin>
-            </CheckBox>
-            <Label text="Cascades:" />
-            <RadioButton fx:id="defaultCascade" mnemonicParsing="false" onAction="#defaultCascadeAction" text="Default">
-               <VBox.margin>
-                  <Insets bottom="5.0" top="5.0" />
-               </VBox.margin>
-            </RadioButton>
-            <RadioButton fx:id="altCascade" mnemonicParsing="false" onAction="#altCascadeAction" text="Alt">
-               <VBox.margin>
-                  <Insets bottom="5.0" />
-               </VBox.margin>
-            </RadioButton>
-            <RadioButton fx:id="alt2Cascade" mnemonicParsing="false" onAction="#alt2CascadeAction" text="Alt2">
-               <VBox.margin>
-                  <Insets bottom="5.0" />
-               </VBox.margin>
-            </RadioButton>
-            <RadioButton fx:id="altTreeCascade" mnemonicParsing="false" onAction="#altTreeCascadeAction" text="Alt tree">
-               <VBox.margin>
-                  <Insets bottom="5.0" />
-               </VBox.margin>
-            </RadioButton>
-         </children>
+      <VBox prefHeight="571.0" prefWidth="215.0" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets bottom="60.0" top="40.0" />
          </BorderPane.margin>
+         <CheckBox fx:id="detectFaceCheckBox" mnemonicParsing="false" onAction="#detectFaceAction" text="Detect face">
+            <VBox.margin>
+               <Insets bottom="5.0" top="5.0" />
+            </VBox.margin>
+         </CheckBox>
+         <Label text="Cascades:" />
+         <RadioButton fx:id="defaultCascade" mnemonicParsing="false" onAction="#defaultCascadeAction" text="Default">
+            <VBox.margin>
+               <Insets bottom="5.0" top="5.0" />
+            </VBox.margin>
+         </RadioButton>
+         <RadioButton fx:id="altCascade" mnemonicParsing="false" onAction="#altCascadeAction" text="Alt">
+            <VBox.margin>
+               <Insets bottom="5.0" />
+            </VBox.margin>
+         </RadioButton>
+         <RadioButton fx:id="alt2Cascade" mnemonicParsing="false" onAction="#alt2CascadeAction" text="Alt2">
+            <VBox.margin>
+               <Insets bottom="5.0" />
+            </VBox.margin>
+         </RadioButton>
+         <RadioButton fx:id="altTreeCascade" mnemonicParsing="false" onAction="#altTreeCascadeAction" text="Alt tree">
+            <VBox.margin>
+               <Insets bottom="5.0" />
+            </VBox.margin>
+         </RadioButton>
       </VBox>
    </right>
 </BorderPane>
