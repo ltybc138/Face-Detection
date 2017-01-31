@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.opencv.core.*;
+import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;
 
 import java.util.concurrent.Executors;
@@ -44,8 +45,10 @@ public class CamWindowController {
     protected boolean firstInto;
 
     // face rect
-    private Mat faceRect = null;
+    @FXML
+    private Button grabFaceRectButton;
     private int faceCounter = 0;
+    private FaceDetector detector = null;
 
     public CamWindowController() {
         cameraActive = false;
@@ -58,7 +61,6 @@ public class CamWindowController {
         defaultCascade.setSelected(true);
         setAllRadioCascadesDisable();
         detectFaceCheckBox.setSelected(false);
-        faceCounter++;
         if (!this.cameraActive) {
             log("Start button have been touched");
 
@@ -125,7 +127,7 @@ public class CamWindowController {
     }
 
     private void loadFaceRect(Mat src, Mat dst, int pyrCount) {
-        FaceDetector detector = new FaceDetector(faceCounter);
+        this.detector = new FaceDetector(faceCounter);
         if (detectFaceCheckBox.isSelected()) {
             if (!defaultCascade.isSelected()) {
                 detector.loadCascade(FaceDetector.faceDefaultCascadePath);
@@ -140,7 +142,6 @@ public class CamWindowController {
                 detector.loadCascade(FaceDetector.faceAltTreeCascadePath);
                 detector.detectAndDrawFace(src, dst, pyrCount);
             }
-            //this.faceRect = detector.getFaceRect();
         }
     }
 
@@ -186,6 +187,12 @@ public class CamWindowController {
         Utils.onFXThread(view.imageProperty(), image);
     }
 
+    private void saveGrabbedFaceRect(Mat faceRect) {
+        Highgui.imwrite("FacesBuffer/" + "face-" + faceCounter + ".jpg" , faceRect);
+        log("Face rect saved successfully");
+        faceCounter++;
+    }
+
     protected void log(String logMessage) {
         System.out.println(logMessage);
     }
@@ -195,8 +202,10 @@ public class CamWindowController {
         detectFaceCheckBox.setOnAction(e -> {
             if (detectFaceCheckBox.isSelected()) {
                 setAllRadioCascadesEnable();
+                //grabFaceRectButton.setDisable(false);
             } else {
                 setAllRadioCascadesDisable();
+                //grabFaceRectButton.setDisable(true);
             }
         });
     }
@@ -230,6 +239,14 @@ public class CamWindowController {
         altTreeCascade.setOnAction(e -> {
             setAllRadioCascadesOff();
             altTreeCascade.setSelected(true);
+        });
+    }
+
+    @FXML
+    protected void grabFaceRectAction() {
+        grabFaceRectButton.setOnAction(e -> {
+            Mat faceRect = detector.getFaceRect();
+            saveGrabbedFaceRect(faceRect);
         });
     }
 }

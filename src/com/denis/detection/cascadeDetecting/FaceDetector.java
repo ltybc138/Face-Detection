@@ -18,7 +18,7 @@ public class FaceDetector {
 
     private CascadeClassifier cascadeDefiner;
     private Mat faceRectMat = null;
-    private int faceCounter;
+    private int faceCounter = 0;
 
     public FaceDetector(int faceCounter) {
         this.faceCounter = faceCounter;
@@ -34,17 +34,17 @@ public class FaceDetector {
                     new Scalar(0, 255, 0));
             faceRect = new Rect(rect.x, rect.y, rect.width, rect.height);
         }
-        Mat faceMat = new Mat(src, faceRect);
-        //this.faceCounter++;
-        //Highgui.imwrite("faceSaves/faceRect-" + this.faceCounter + ".jpg", faceMat);
-        File faceRectFile = new File("FacesBuffer/faceRect-" + faceCounter + ".jpg");
+        faceRectMat = new Mat(src, faceRect);
+        this.faceCounter++;
+        Highgui.imwrite("FacesBuffer/faceRect.jpg", faceRectMat);
+        /*File faceRectFile = new File("FacesBuffer/faceRect-" + faceCounter + ".jpg");
         BufferedImage faceImage = Utils.matToBufferedImage(faceMat);
         try {
             ImageIO.write(faceImage, "JPEG", faceRectFile);
             System.out.println("Face rect saved successfully");
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void loadCascade(String cascadePath) {

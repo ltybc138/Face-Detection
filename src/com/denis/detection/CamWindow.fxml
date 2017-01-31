@@ -51,6 +51,7 @@
                <Insets bottom="5.0" />
             </VBox.margin>
          </RadioButton>
+         <Button fx:id="grabFaceRectButton" disable="true" mnemonicParsing="false" onAction="#grabFaceRectAction" text="Grab face rect" />
       </VBox>
    </right>
 </BorderPane>
